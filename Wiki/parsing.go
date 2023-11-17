@@ -1,7 +1,7 @@
 package main
 
 import (
-  //"strings"
+  "strings"
 )
 
 //represents all nodes even though not all members are used
@@ -99,13 +99,13 @@ func emitBody( c *Node ) string {
 }
 
 func emitPara( t *Node ) string {
-  return "<textarea class='paragraph'>" + t.value + "</textarea>"
+  return "<textarea class='paragraph'>" + t.text + "</textarea>"
 }
 func emitHn( t *Node ) string {
-  return "<input type='text' class='heading' value='" + t.value + "'></input>"
+  return "<input type='text' class='heading' value='" + t.text + "'></input>"
 }
 func emitLi( t *Node ) string {
-  return "<input type='text' class='item' value='" + t.value + "'></input>"
+  return "<input type='text' class='item' value='" + t.text + "'></input>"
 }
 
 func wrapElement( emitted string ) string {
