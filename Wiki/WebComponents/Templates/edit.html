@@ -5,8 +5,7 @@
     <link rel="shortcut icon" href="/WebComponents/Ico/favicon.ico">
     <link rel="stylesheet" href="/WebComponents/Templates/inputs.css">
     <script type="text/javascript" src="/WebComponents/Templates/tools.js"></script>
-    <!-- add property to title -->
-    <title>Edit </title>
+    <title>Edit {{.DocName}}</title>
 
     <!-- HTMX INSTALL -->
     <script src="https://unpkg.com/htmx.org@1.9.4"></script>
@@ -14,12 +13,18 @@
   </head>
   <body>
     <a href="/home/"><button>Home</button></a>
-    <a href="/view/"><button>View</button></a>
+    <a href="/view/{{.DocName}}"><button>View</button></a>
     <div id="errorMessage"></div>
-    <input type="text" name="heading" value="" class="heading" placeholder="Wiki Title">
+    <input type="text" name="heading" value="{{.DocName}}" class="heading" placeholder="Wiki Title">
     <button type="button" name="button" class="ignore" onclick="insertSection()">Add Section</button>
-    <button type="button">Submit</button>
-
+    <button type="button" hx-post="/save/" hx-vals='js:{ oldTitle: "{{.DocName}}", emitted: TranslateDOM().emitDOM(), newTitle: resultingTranslation.children[0].value  }' hx-target="#errorMessage">Submit</button>
+    {{.HTMLContent}}
   </body>
 
+  <!-- <script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+      const imdumb = strToDOM( '{{printf "%s" .Content}}' );
+      imdumb.emitDOM();
+    }, false);
+  </script> -->
 </html>

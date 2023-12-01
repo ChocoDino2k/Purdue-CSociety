@@ -16,6 +16,6 @@
     <div id="errorMessage"></div>
     <input type="text" name="heading" value="" class="heading" placeholder="Wiki Title">
     <button type="button" name="button" class="ignore" onclick="insertSection()">Add Section</button>
-    <button type="button">Submit</button>
+    <button type="button" hx-post="/save/" hx-vals='js:{ oldTitle: "", emitted: TranslateDOM().emitDOM(), newTitle: resultingTranslation.children[0].value }' hx-target="#errorMessage">Submit</button>
   </body>
 </html>

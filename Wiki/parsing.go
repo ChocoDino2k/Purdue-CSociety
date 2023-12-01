@@ -8,59 +8,55 @@ import (
 //for each type of node
 //Go does not have classes and we need polymorphism
 type Node struct {
-  tag string  //the tag of the html element parsed
-  text string //if it is a terminal, this is the text between the opening and closing tags
-  parent *Node //the node/element that contains this node/element
-  children []*Node //if it is a container, these are the nodes/elements it contains
-  emitHTML func( *Node ) string //emit is synonymous with “print” or “convert to string” here
+  tag string
+  value string
+  parent *Node
+  children []*Node
+  emitHTML func( *Node ) string
 }
 
-
 func createNode( tag string, parent *Node ) *Node {
+
   var result = &Node {
     tag: tag,
     value: "",
-    parent: parent
-  }
+    parent: parent }
 
   switch tag {
-  case "section":
-    result.emitHTML = emitSection
-    break
-  case "div":
-    result.emitHTML = emitDiv
-    break
-  case "ul":
-    result.emitHTML = emitUl
-    break
-  case "body":
-    result.emitHTML = emitBody
-    break
-  case "p":
-    result.emitHTML = emitPara
-    break
-  case "li":
-    result.emitHTML = emitLi
-    break
-  case "h1":
-    result.emitHTML = emitHn
-    break
-  case "h2":
-    result.emitHTML = emitHn
-    break
-  default:
-    result.emitHTML = emitBody
+    case "section":
+      result.emitHTML = emitSection
+      break
+    case "div":
+      result.emitHTML = emitDiv
+      break
+    case "ul":
+      result.emitHTML = emitUl
+      break
+    case "body":
+      result.emitHTML = emitBody
+      break
+    case "p":
+      result.emitHTML = emitPara
+      break
+    case "li":
+      result.emitHTML = emitLi
+      break
+    case "h1":
+      result.emitHTML = emitHn
+      break
+    case "h2":
+      result.emitHTML = emitHn
+      break
+    default:
+      result.emitHTML = emitBody
+  }
+
+  if ( parent != nil ) {
+    parent.addChild( result )
+  }
+  return result
 }
 
- if ( parent != nil ) {
-   parent.addChild( result )
- }
- return result
-
-}
-
-//this notation allows us to use a dot notation to call the function addChild
-//ex. n.addChild( c )
 func ( n *Node ) addChild( c *Node ) {
   n.children = append(n.children, c)
 }
@@ -99,13 +95,13 @@ func emitBody( c *Node ) string {
 }
 
 func emitPara( t *Node ) string {
-  return "<textarea class='paragraph'>" + t.text + "</textarea>"
+  return "<textarea class='paragraph'>" + t.value + "</textarea>"
 }
 func emitHn( t *Node ) string {
-  return "<input type='text' class='heading' value='" + t.text + "'></input>"
+  return "<input type='text' class='heading' value='" + t.value + "'></input>"
 }
 func emitLi( t *Node ) string {
-  return "<input type='text' class='item' value='" + t.text + "'></input>"
+  return "<input type='text' class='item' value='" + t.value + "'></input>"
 }
 
 func wrapElement( emitted string ) string {
@@ -149,30 +145,53 @@ func readTag( str string ) string {
   return str[1 : end]
 }
 
-
-// Create Intermediate Representation
-// Generate a Node parent that contains the parsed text as Nodes
 func createIR( str string ) *Node {
+  var curContainer *Node = createNode("body", nil)
+  var remainingStr string = str
+  var tag string = readTag( remainingStr )
 
-  //prentend like we have a body
-  // createNode( "body", nil )
+  for len(tag) > 0 {
+    remainingStr = remainingStr[ (len(tag) + 2): ]
+    var buff string = getContent( tag, remainingStr )
+    //code based on tag
+    //terminals just get the content
+    if (
+      tag == "li" ||
+      tag == "p" ||
+      tag == "h1" ||
+      tag == "h2" ) {
+      n := createNode( tag, curContainer )
+      n.value = buff
+    } else if (
+      tag == "section" ||
+      tag == "div" ||
+      tag == "ul" ) {
+      n := createNode( tag, curContainer )
+      n.children = createIR( buff ).children
+    }
 
-  //reading a tag, reading content
-  // while a tag is found
-      //two cases
-        //terminal node
-            //create the node and store the content
-        //container node
-          //create the node and store the children through a recursive call
+    //end
+    // content + < + tag + />
+    if ( len(buff) + len(tag) + 3 >= len(remainingStr) ) {
+      remainingStr = ""
+    } else {
+      remainingStr = remainingStr[ (len(tag) + len(buff) + 3): ]
+    }
+    tag = readTag( remainingStr )
+  }
+  return curContainer
 
-    //ending condition
-      //there isn't more string to be read (the current position is at the end)
-  return nil
 }
 
-
-// Given a string that has read only html tags, transform it into a string that has input tags
-// Use all of the previously defined functions to achieve this
 func TransformStr( str string ) string {
-  return str
+  n := createIR( str )
+  var result string = ""
+
+  for i, value := range n.children {
+    if ( i == 0 ) { continue }
+    result += value.emitHTML( value )
+  }
+
+  return result
+
 }
